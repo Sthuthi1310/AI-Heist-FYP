@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Heist – Model Stealing & API Defense Console</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">🛡️</div>
+        <div class="brand-title-wrap">
+          <div class="brand-row">
+            <h1 class="brand-title">AI Heist</h1>
+            <span class="badge-tag">Model Stealing & Defense Console</span>
+          </div>
+          <p class="brand-subtitle">Simulate black-box model extraction attacks and test real-time API defense mechanisms</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-pill status-online" id="api-status-pill">
+          <span class="pulse-dot"></span> API Online
+        </div>
+        <div class="status-pill status-ready" id="model-status-pill">
+          <span>🧠</span> Model: Logistic Regression
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App Layout -->
+  <main class="main-container">
+    <!-- Quick Stepper / Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-predict">
+        <span class="tab-icon">🔮</span>
+        <span class="tab-text">1. Attrition Predictor</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-attack">
+        <span class="tab-icon">⚡</span>
+        <span class="tab-text">2. Heist Simulator</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-substitute">
+        <span class="tab-icon">🤖</span>
+        <span class="tab-text">3. Copycat Model</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-defense">
+        <span class="tab-icon">🛡️</span>
+        <span class="tab-text">4. Defenses & Threat Monitor</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-evaluation">
+        <span class="tab-icon">📊</span>
+        <span class="tab-text">5. Results & Scoreboard</span>
+      </button>
+    </nav>
+
+    <!-- TAB 1: HR ATTRITION PREDICTOR (Default Active) -->
+    <section id="tab-predict" class="tab-content active">
+      <div class="view-intro-banner">
+        <div class="intro-text">
+          <h2>Employee Attrition Prediction</h2>
+          <p>Test the company's live target model. Submit an employee profile or pick a one-click sample preset below to see the prediction and real-time security inspection.</p>
+        </div>
+        <div class="preset-action-bar">
+          <span class="preset-label">Quick Presets:</span>
+          <button type="button" class="btn btn-sm btn-preset-danger" id="load-high-risk-btn">🔴 High Risk Profile</button>
+          <button type="button" class="btn btn-sm btn-preset-warning" id="load-mod-risk-btn">🟡 Moderate Profile</button>
+          <button type="button" class="btn btn-sm btn-preset-success" id="load-low-risk-btn">🟢 Loyal / Stable Profile</button>
+        </div>
+      </div>
+
+      <div class="grid-layout-predictor">
+        <!-- Input Form Card -->
+        <div class="card form-card">
+          <div class="card-header">
+            <div class="header-title-group">
+              <h3>Employee Attributes Form</h3>
+              <span class="badge badge-neutral">24 Features</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <form id="prediction-form">
+              <!-- Group 1: Role & Demographics -->
+              <div class="form-section">
+                <div class="section-title">
+                  <span>👤</span> Personal & Role Info
+                </div>
+                <div class="fields-grid">
+                  <div class="input-field">
+                    <label>Age</label>
+                    <input type="number" id="f-Age" value="34" min="18" max="65" required>
+                  </div>
+                  <div class="input-field">
+                    <label>Gender</label>
+                    <select id="f-Gender">
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                  <div class="input-field">
+                    <label>Marital Status</label>
+                    <select id="f-Marital_Status">
+                      <option value="Single">Single</option>
+                      <option value="Married">Married</option>
+                      <option value="Divorced">Divorced</option>
+                    </select>
+                  </div>
+                  <div class="input-field">
+                    <label>Department</label>
+                    <select id="f-Department">
+                      <option value="Sales">Sales</option>
+                      <option value="HR">HR</option>
+                      <option value="Finance">Finance</option>
+                      <option value="Marketing">Marketing</option>
+                      <option value="IT">IT</option>
+                    </select>
+                  </div>
+                  <div class="input-field">
+                    <label>Job Role</label>
+                    <select id="f-Job_Role">
+                      <option value="Manager">Manager</option>
+                      <option value="Assistant">Assistant</option>
+                      <option value="Analyst">Analyst</option>
+                      <option value="Executive">Executive</option>
+                    </select>
+                  </div>
+                  <div class="input-field">
+                    <label>Job Level (1 - 5)</label>
+                    <input type="number" id="f-Job_Level" value="2" min="1" max="5">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 2: Compensation & Tenure -->
+              <div class="form-section">
+                <div class="section-title">
+                  <span>💼</span> Compensation & Tenure
+                </div>
+                <div class="fields-grid">
+                  <div class="input-field">
+                    <label>Monthly Income ($)</label>
+                    <input type="number" id="f-Monthly_Income" value="6500" min="1000" max="30000">
+                  </div>
+                  <div class="input-field">
+                    <label>Hourly Rate ($)</label>
+                    <input type="number" id="f-Hourly_Rate" value="55" min="10" max="150">
+                  </div>
+                  <div class="input-field">
+                    <label>Years at Company</label>
+                    <input type="number" id="f-Years_at_Company" value="4" min="0" max="40">
+                  </div>
+                  <div class="input-field">
+                    <label>Years in Current Role</label>
+                    <input type="number" id="f-Years_in_Current_Role" value="2" min="0" max="25">
+                  </div>
+                  <div class="input-field">
+                    <label>Years Since Promotion</label>
+                    <input type="number" id="f-Years_Since_Last_Promotion" value="1" min="0" max="20">
+                  </div>
+                  <div class="input-field">
+                    <label>Prior Companies</label>
+                    <input type="number" id="f-Number_of_Companies_Worked" value="2" min="0" max="10">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 3: Satisfaction & Environment -->
+              <div class="form-section">
+                <div class="section-title">
+                  <span>⭐</span> Satisfaction & Environment Ratings
+                </div>
+                <div class="fields-grid">
+                  <div class="input-field">
+                    <label>Job Satisfaction (1-5)</label>
+                    <input type="number" id="f-Job_Satisfaction" value="3" min="1" max="5">
+                  </div>
+                  <div class="input-field">
+                    <label>Work-Life Balance (1-4)</label>
+                    <input type="number" id="f-Work_Life_Balance" value="2" min="1" max="4">
+                  </div>
+                  <div class="input-field">
+                    <label>Work Environment (1-4)</label>
+                    <input type="number" id="f-Work_Environment_Satisfaction" value="3" min="1" max="4">
+                  </div>
+                  <div class="input-field">
+                    <label>Manager Relation (1-4)</label>
+                    <input type="number" id="f-Relationship_with_Manager" value="3" min="1" max="4">
+                  </div>
+                  <div class="input-field">
+                    <label>Job Involvement (1-4)</label>
+                    <input type="number" id="f-Job_Involvement" value="3" min="1" max="4">
+                  </div>
+                  <div class="input-field">
+                    <label>Performance Rating (1-4)</label>
+                    <input type="number" id="f-Performance_Rating" value="3" min="1" max="4">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group 4: Workload & Commute -->
+              <div class="form-section">
+                <div class="section-title">
+                  <span>⏱️</span> Workload & Distance
+                </div>
+                <div class="fields-grid">
+                  <div class="input-field highlight-field">
+                    <label>Overtime Required?</label>
+                    <select id="f-Overtime">
+                      <option value="No">No</option>
+                      <option value="Yes">Yes</option>
+                    </select>
+                  </div>
+                  <div class="input-field">
+                    <label>Avg Hours / Week</label>
+                    <input type="number" id="f-Average_Hours_Worked_Per_Week" value="44" min="20" max="80">
+                  </div>
+                  <div class="input-field">
+                    <label>Training Hours (Year)</label>
+                    <input type="number" id="f-Training_Hours_Last_Year" value="45" min="0" max="150">
+                  </div>
+                  <div class="input-field">
+                    <label>Active Projects</label>
+                    <input type="number" id="f-Project_Count" value="4" min="1" max="15">
+                  </div>
+                  <div class="input-field">
+                    <label>Absenteeism (Days)</label>
+                    <input type="number" id="f-Absenteeism" value="6" min="0" max="50">
+                  </div>
+                  <div class="input-field">
+                    <label>Commute Distance (km)</label>
+                    <input type="number" id="f-Distance_From_Home" value="18" min="1" max="100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="submit-wrap">
+                <button type="submit" class="btn btn-primary btn-lg" id="predict-btn">
+                  <span>⚡</span> Run Real-Time Prediction
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Result Card -->
+        <div class="card result-card">
+          <div class="card-header">
+            <h3>Prediction Results</h3>
+            <span class="badge badge-success">Model Active</span>
+          </div>
+          <div class="card-body">
+            <!-- Initial Empty State -->
+            <div id="prediction-result-empty" class="empty-state">
+              <div class="empty-icon">📊</div>
+              <h4>No Prediction Yet</h4>
+              <p>Fill out the employee attributes form or click one of the quick presets above, then click <strong>"Run Real-Time Prediction"</strong>.</p>
+            </div>
+
+            <!-- Active Prediction View -->
+            <div id="prediction-result-panel" class="result-details" style="display: none;">
+              <!-- Main Verdict Banner -->
+              <div class="verdict-banner" id="verdict-banner">
+                <div class="verdict-header">Attrition Prediction</div>
+                <div class="verdict-main" id="res-attrition-badge">NO ATTRITION</div>
+                <div class="verdict-desc" id="verdict-desc">Employee is likely to stay with the company.</div>
+              </div>
+
+              <!-- Probability Gauge -->
+              <div class="meter-card">
+                <div class="meter-title-row">
+                  <span>Attrition Risk Probability</span>
+                  <span class="meter-pct" id="res-prob-text">48.5%</span>
+                </div>
+                <div class="meter-track">
+                  <div class="meter-fill" id="res-prob-fill" style="width: 48.5%;"></div>
+                </div>
+                <div class="meter-scale-markers">
+                  <span>0% (Very Safe)</span>
+                  <span>50% (Threshold)</span>
+                  <span>100% (High Risk)</span>
+                </div>
+              </div>
+
+              <!-- Risk Factor Indicators -->
+              <div class="factors-card">
+                <div class="factors-title">Key Profile Signals</div>
+                <div class="factors-list" id="factors-list">
+                  <span class="factor-chip" id="chip-overtime">Overtime: Normal</span>
+                  <span class="factor-chip" id="factor-income">Compensation: Market Rate</span>
+                  <span class="factor-chip" id="factor-satisfaction">Satisfaction: Normal</span>
+                </div>
+              </div>
+
+              <!-- Security Inspection Box -->
+              <div class="security-card">
+                <div class="sec-title">
+                  <span>🔒</span> API Security Inspection
+                </div>
+                <div class="sec-rows">
+                  <div class="sec-row">
+                    <span class="sec-k">Threat Anomaly Status:</span>
+                    <span class="sec-v" id="res-sec-suspicious">Clean (Normal User)</span>
+                  </div>
+                  <div class="sec-row">
+                    <span class="sec-k">Suspicion Score:</span>
+                    <span class="sec-v font-mono" id="res-sec-score">0.05</span>
+                  </div>
+                  <div class="sec-row">
+                    <span class="sec-k">Defense Output:</span>
+                    <span class="sec-v" id="res-sec-defense">Clean Unaltered Model Output</span>
+                  </div>
+                  <div class="sec-row">
+                    <span class="sec-k">API Response Time:</span>
+                    <span class="sec-v font-mono" id="res-sec-latency">8.2 ms</span>
+                  </div>
+                </div>
+                <div class="sec-footnote" id="res-sec-note">
+                  ✓ Query was not perturbed; utility retention is not separately benchmarked.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: HEIST SIMULATOR (ATTACK) -->
+    <section id="tab-attack" class="tab-content">
+      <div class="view-intro-banner">
+        <div class="intro-text">
+          <h2>Black-Box Model Stealing Simulator (AI Heist)</h2>
+          <p>Simulate an adversary attempting to steal the company's employee attrition model by spamming input queries to the API without access to private source code or training data.</p>
+        </div>
+      </div>
+
+      <div class="card attack-setup-card">
+        <div class="card-header">
+          <h3>Heist Attack Configuration</h3>
+          <span class="badge badge-danger">Adversary Simulator</span>
+        </div>
+        <div class="card-body">
+          <div class="attack-steps-grid">
+            <!-- Step 1 -->
+            <div class="step-box">
+              <div class="step-num">Step 1</div>
+              <h4>Choose Query Budget</h4>
+              <p>How many API queries should the attacker send?</p>
+              <select id="attack-query-count" class="form-select">
+                <option value="200">200 Queries (Quick Heist ~3s)</option>
+                <option value="500" selected>500 Queries (Standard Heist ~6s)</option>
+                <option value="1000">1000 Queries (Exhaustive Heist ~12s)</option>
+                <option value="2000">2000 Queries (Budget Stress Test ~24s)</option>
+              </select>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-box">
+              <div class="step-num">Step 2</div>
+              <h4>Target API Defense Mode</h4>
+              <p>Test the attack with or without protective shields:</p>
+              <div class="mode-cards">
+                <label class="mode-card-radio">
+                  <input type="radio" name="attack-mode" value="undefended" checked>
+                  <div class="mode-card-content">
+                    <div class="mode-title">🔓 Undefended API</div>
+                    <div class="mode-desc">No rate limits or noise. Attacker extracts clean model behavior.</div>
+                  </div>
+                </label>
+                <label class="mode-card-radio">
+                  <input type="radio" name="attack-mode" value="defended">
+                  <div class="mode-card-content">
+                    <div class="mode-title">🛡️ Defended API</div>
+                    <div class="mode-desc">Rate-limiting blocks bots; adaptive perturbation poisons stolen data.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-box step-action">
+              <div class="step-num">Step 3</div>
+              <h4>Execute Attack</h4>
+              <p>Start the automated harvesting sequence:</p>
+              <button class="btn btn-danger btn-lg btn-block" id="start-attack-btn">
+                <span>🚀</span> Launch Black-Box Attack
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Progress & Dashboard -->
+          <div class="heist-monitor-box">
+            <div class="heist-progress-row">
+              <div class="progress-label-wrap">
+                <span class="progress-status" id="attack-status-label">Status: Ready to Launch</span>
+                <span class="progress-pct" id="attack-progress-text">0%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="attack-progress-fill" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- 4 Visual Counter Cards -->
+            <div class="heist-counters-grid">
+              <div class="counter-card">
+                <div class="counter-icon">📤</div>
+                <div class="counter-val" id="stat-total-queries">0</div>
+                <div class="counter-title">Queries Sent</div>
+              </div>
+              <div class="counter-card counter-green">
+                <div class="counter-icon">📥</div>
+                <div class="counter-val" id="stat-harvested-queries">0</div>
+                <div class="counter-title">Harvested Predictions</div>
+              </div>
+              <div class="counter-card counter-amber">
+                <div class="counter-icon">⛔</div>
+                <div class="counter-val" id="stat-blocked-queries">0</div>
+                <div class="counter-title">Rate-Limited (HTTP 429)</div>
+              </div>
+              <div class="counter-card counter-red">
+                <div class="counter-icon">🧪</div>
+                <div class="counter-val" id="stat-perturbed-queries">0</div>
+                <div class="counter-title">Perturbed / Poisoned</div>
+              </div>
+            </div>
+
+            <!-- Live Terminal Log -->
+            <div class="terminal-card">
+              <div class="terminal-bar">
+                <span class="terminal-title">🖥️ Live Adversary Query Stream</span>
+                <span class="terminal-status">Real-Time</span>
+              </div>
+              <div class="terminal-logs" id="attack-console-log">
+                <div class="log-row log-dim">[SYSTEM READY] Select your query budget and click "Launch Black-Box Attack".</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: COPYCAT MODEL TRAINING -->
+    <section id="tab-substitute" class="tab-content">
+      <div class="view-intro-banner">
+        <div class="intro-text">
+          <h2>Substitute (Copycat) Model Training</h2>
+          <p>The attacker takes the stolen API responses and trains a local <strong>Random Forest</strong> model to mimic the company's proprietary AI. Compare training on undefended vs. defended stolen datasets.</p>
+        </div>
+      </div>
+
+      <div class="grid-layout-copycat">
+        <!-- Action Cards Grid -->
+        <div class="card">
+          <div class="card-header">
+            <h3>1-Click Copycat Model Training</h3>
+            <span class="badge badge-accent">Random Forest</span>
+          </div>
+          <div class="card-body">
+            <div class="copycat-actions-wrap">
+              <!-- Undefended Option -->
+              <div class="copycat-card">
+                <div class="copycat-card-header">
+                  <div class="copycat-title">
+                    <span class="badge badge-danger">Scenario A</span>
+                    <h4>Copycat on Clean Stolen Data</h4>
+                  </div>
+                  <p>Trains on <code>stolen_dataset_undefended.csv</code> where the attacker successfully extracted clean labels from the vulnerable API.</p>
+                </div>
+                <div class="copycat-action-row">
+                  <button class="btn btn-primary btn-block" id="train-sub-undefended-btn">
+                    <span>⚡</span> Train Copycat (Undefended)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Defended Option -->
+              <div class="copycat-card">
+                <div class="copycat-card-header">
+                  <div class="copycat-title">
+                    <span class="badge badge-success">Scenario B</span>
+                    <h4>Copycat on Defended Stolen Data</h4>
+                  </div>
+                  <p>Trains on <code>stolen_dataset_defended.csv</code> where the API's rate limits and output perturbation poisoned the thief's data.</p>
+                </div>
+                <div class="copycat-action-row">
+                  <button class="btn btn-warning btn-block" id="train-sub-defended-btn">
+                    <span>🛡️</span> Train Copycat (Defended)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Plain English Explanation -->
+            <div class="info-callout">
+              <div class="info-icon">💡</div>
+              <div class="info-content">
+                <strong>What is Model Fidelity?</strong>
+                <p>Fidelity measures the percentage of test cases where the attacker's clone gives the <em>exact same answer</em> as your real model. High fidelity (e.g. &gt;80%) means your intellectual property was stolen! Defenses drop fidelity to protect your AI.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Training Log Output -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Training Output & Fidelity Results</h3>
+            <span class="badge badge-neutral">Live Logger</span>
+          </div>
+          <div class="card-body">
+            <div class="terminal-logs terminal-tall" id="substitute-train-log">
+              <div class="log-row log-dim">[TRAINING STATUS] Ready to fit substitute models. Click one of the buttons on the left.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: DEFENSES & THREAT MONITOR -->
+    <section id="tab-defense" class="tab-content">
+      <div class="view-intro-banner">
+        <div class="intro-text">
+          <h2>Security & Defense Center (SOC)</h2>
+          <p>Configure real-time API protective shields. Any changes take effect immediately on incoming queries.</p>
+        </div>
+        <button class="btn btn-primary" id="save-sec-config-btn">
+          <span>💾</span> Save & Apply Security Settings
+        </button>
+      </div>
+
+      <div class="grid-two">
+        <!-- Defense Toggles -->
+        <div class="card">
+          <div class="card-header">
+            <h3>API Defense Switches</h3>
+            <span class="badge badge-accent">Multi-Layer</span>
+          </div>
+          <div class="card-body">
+            <div class="defense-toggle-list">
+              <!-- Toggle 1: Rate Limiter -->
+              <div class="defense-item">
+                <div class="defense-item-info">
+                  <div class="defense-item-title">
+                    <span>🛡️</span> Rate Limiting (Token Bucket)
+                  </div>
+                  <p>Throttles high-speed automated bots with HTTP 429 "Too Many Requests". Real users browsing normally are never blocked.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-rate-limiting">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+
+              <!-- Toggle 2: Suspicious Detection -->
+              <div class="defense-item">
+                <div class="defense-item-info">
+                  <div class="defense-item-title">
+                    <span>👁️</span> Suspicious Query Detection
+                  </div>
+                  <p>Analyzes sub-human request velocity, burst frequency, and systematic decision boundary probing.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-suspicious-detection">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+
+              <!-- Toggle 3: Output Perturbation -->
+              <div class="defense-item">
+                <div class="defense-item-info">
+                  <div class="defense-item-title">
+                    <span>🔄</span> Adaptive Output Perturbation
+                  </div>
+                  <p>Infects queries flagged as bots with controlled label flips and probability noise, poisoning the thief's training dataset.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-perturbation">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+
+              <!-- Toggle 4: API Key Auth -->
+              <div class="defense-item">
+                <div class="defense-item-info">
+                  <div class="defense-item-title">
+                    <span>🔑</span> API Key Authentication (X-API-Key)
+                  </div>
+                  <p>Restricts access to registered developer and HR keys.</p>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" id="toggle-auth">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Sliders -->
+            <div class="defense-sliders">
+              <div class="slider-box">
+                <div class="slider-label-row">
+                  <span>Detection Sensitivity Threshold</span>
+                  <span class="slider-val" id="thresh-val">0.50</span>
+                </div>
+                <input type="range" id="suspicion-threshold-slider" min="0.10" max="0.90" step="0.05" value="0.50">
+              </div>
+
+              <div class="slider-box">
+                <div class="slider-label-row">
+                  <span>Rate Limit (Max Requests / Minute)</span>
+                  <span class="slider-val" id="rate-val">60</span>
+                </div>
+                <input type="range" id="rate-limit-slider" min="10" max="300" step="10" value="60">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Threat Feed -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Live Security Audit Stream</h3>
+            <div class="header-actions">
+              <button class="btn btn-sm btn-outline" id="refresh-logs-btn">🔄 Refresh</button>
+              <button class="btn btn-sm btn-outline" id="clear-logs-btn">Clear</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="styled-table" id="security-events-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Client</th>
+                    <th>Status</th>
+                    <th>Suspicion</th>
+                    <th>Defense Action</th>
+                  </tr>
+                </thead>
+                <tbody id="security-events-tbody">
+                  <tr>
+                    <td colspan="5" class="text-center empty-td">No recent security events logged.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: RESULTS & SCOREBOARD -->
+    <section id="tab-evaluation" class="tab-content">
+      <div class="view-intro-banner">
+        <div class="intro-text">
+          <h2>Heist Scoreboard & Comparative Evaluation</h2>
+          <p>See how the attacker's copycat model compares against your company's original model before and after defenses.</p>
+        </div>
+        <button class="btn btn-primary" id="refresh-metrics-btn">
+          <span>🔄</span> Refresh Scoreboard
+        </button>
+      </div>
+
+      <!-- 3 Model Cards Grid -->
+      <div class="scoreboard-cards-grid">
+        <!-- Target Model -->
+        <div class="score-card victim-score-card">
+          <div class="score-badge">Original Model (Target)</div>
+          <h3 class="score-title">Logistic Regression</h3>
+          <p class="score-sub">Your Company's Model</p>
+          <div class="score-main-stat">
+            <div class="score-num" id="metric-orig-acc">50.5%</div>
+            <div class="score-desc">Baseline Test Accuracy</div>
+          </div>
+          <div class="score-details-row">
+            <div>F1 Score: <strong id="metric-orig-f1">0.2855</strong></div>
+            <div>ROC-AUC: <strong id="metric-orig-auc">0.5086</strong></div>
+          </div>
+          <div class="score-status-tag tag-target">Target Reference</div>
+        </div>
+
+        <!-- Copycat Undefended -->
+        <div class="score-card undefended-score-card">
+          <div class="score-badge badge-danger">Undefended API Attack</div>
+          <h3 class="score-title">Random Forest Copycat</h3>
+          <p class="score-sub">Trained on Clean Stolen Data</p>
+          <div class="score-main-stat">
+            <div class="score-num score-danger" id="metric-undef-fid">84.9%</div>
+            <div class="score-desc">Fidelity (Agreement with Target)</div>
+          </div>
+          <div class="score-details-row">
+            <div>Test Accuracy: <strong id="metric-undef-acc">54.2%</strong></div>
+            <div>F1 Score: <strong id="metric-undef-f1">0.2730</strong></div>
+          </div>
+          <div class="score-status-tag tag-breach" id="tag-undef-status">⚠️ Theft Succeeded</div>
+        </div>
+
+        <!-- Copycat Defended -->
+        <div class="score-card defended-score-card">
+          <div class="score-badge badge-success">Defended API Attack</div>
+          <h3 class="score-title">Random Forest Copycat</h3>
+          <p class="score-sub">Trained on Defended Stolen Data</p>
+          <div class="score-main-stat">
+            <div class="score-num score-success" id="metric-def-fid">--</div>
+            <div class="score-desc">Fidelity (Agreement with Target)</div>
+          </div>
+          <div class="score-details-row">
+            <div>Test Accuracy: <strong id="metric-def-acc">--</strong></div>
+            <div>F1 Score: <strong id="metric-def-f1">--</strong></div>
+          </div>
+          <div class="score-status-tag tag-defended" id="tag-def-status">🛡️ Attack Thwarted</div>
+        </div>
+      </div>
+
+      <!-- Impact Takeaway Banner -->
+      <div class="impact-verdict-banner" id="impact-banner">
+        <div class="verdict-icon">🛡️</div>
+        <div class="verdict-text-block">
+          <h4 id="impact-headline">Defense Evaluation Summary: Attack Thwarted</h4>
+          <p id="impact-details">
+            In a representative run, enabling API defenses dropped observed copycat agreement from <strong>84.9% to 58.2%</strong> (-26.7 percentage points). Rate limiting throttled bot extraction bursts and adaptive noise poisoned stolen responses. Genuine-user utility has not yet been separately measured.
+          </p>
+        </div>
+      </div>
+
+      <!-- Detailed Side-by-Side Table -->
+      <div class="card matrix-card">
+        <div class="card-header">
+          <h3>Full Side-by-Side Performance Matrix</h3>
+          <span class="badge badge-neutral">Held-Out Test Set (2,000 samples)</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="styled-table score-table">
+              <thead>
+                <tr>
+                  <th>Model Scenario</th>
+                  <th>Extraction Fidelity</th>
+                  <th>Test Accuracy</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1 Score</th>
+                  <th>Legitimate User Utility</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-matrix-tbody">
+                <tr>
+                  <td><strong>Target Model (Logistic Regression)</strong></td>
+                  <td><span class="pill-badge pill-blue">100.0% (Oracle)</span></td>
+                  <td id="row-orig-acc">50.5%</td>
+                  <td id="row-orig-prec">20.0%</td>
+                  <td id="row-orig-rec">49.6%</td>
+                  <td id="row-orig-f1">0.2855</td>
+                  <td><span class="pill-badge pill-green">Held-out Baseline</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Copycat Model (Undefended API)</strong></td>
+                  <td><span class="pill-badge pill-red" id="row-undef-fid">84.9%</span></td>
+                  <td id="row-undef-acc">54.2%</td>
+                  <td id="row-undef-prec">20.0%</td>
+                  <td id="row-undef-rec">43.1%</td>
+                  <td id="row-undef-f1">0.2730</td>
+                  <td><span class="pill-badge pill-red">Model Stolen by Attacker</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Copycat Model (Defended API)</strong></td>
+                  <td><span class="pill-badge pill-green" id="row-def-fid">58.2%</span></td>
+                  <td id="row-def-acc">53.9%</td>
+                  <td id="row-def-prec">18.6%</td>
+                  <td id="row-def-rec">38.9%</td>
+                  <td id="row-def-f1">0.2516</td>
+                  <td><span class="pill-badge pill-green">Utility Not Yet Benchmarked</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Clean Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-team">
+        <strong>AI Heist: Model Stealing & API Defense</strong> &bull; Batch 39 &bull; JSS Science & Technology University (SJCE), Mysuru
+      </div>
+      <div class="footer-members">
+        <span>Sthuthi Sheela (01JST23UCS151)</span> &bull; 
+        <span>Hemalatha H B (01JST23UCS049)</span> &bull; 
+        <span>Bhavani (01JST23UCS023)</span> &bull; 
+        <span>Vaishnavi Panchal (01JST24UCS414)</span> &bull; 
+        <span>Guide: Prof. Shruthi N M</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

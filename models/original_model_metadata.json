@@ -1,0 +1,45 @@
+{
+  "model_type": "LogisticRegression",
+  "library": "scikit-learn",
+  "training_samples": 5000,
+  "test_samples": 2000,
+  "features": [
+    "Gender",
+    "Marital_Status",
+    "Department",
+    "Job_Role",
+    "Overtime",
+    "Age",
+    "Job_Level",
+    "Monthly_Income",
+    "Hourly_Rate",
+    "Years_at_Company",
+    "Years_in_Current_Role",
+    "Years_Since_Last_Promotion",
+    "Work_Life_Balance",
+    "Job_Satisfaction",
+    "Performance_Rating",
+    "Training_Hours_Last_Year",
+    "Project_Count",
+    "Average_Hours_Worked_Per_Week",
+    "Absenteeism",
+    "Work_Environment_Satisfaction",
+    "Relationship_with_Manager",
+    "Job_Involvement",
+    "Distance_From_Home",
+    "Number_of_Companies_Worked"
+  ],
+  "metrics": {
+    "accuracy": 0.5045,
+    "precision": 0.2004,
+    "recall": 0.4962,
+    "f1_score": 0.2855,
+    "roc_auc": 0.5086,
+    "confusion_matrix": {
+      "tn": 811,
+      "fp": 790,
+      "fn": 201,
+      "tp": 198
+    }
+  }
+}

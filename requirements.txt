@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn
+flask
+flask-limiter
+matplotlib
+seaborn
+joblib
+requests
