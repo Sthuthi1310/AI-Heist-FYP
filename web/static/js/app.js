@@ -115,6 +115,12 @@ function collectFormData() {
 }
 
 async function runPrediction() {
+  const form = document.getElementById("prediction-form");
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
   const payload = collectFormData();
   const emptyState = document.getElementById("prediction-result-empty");
   const panelState = document.getElementById("prediction-result-panel");

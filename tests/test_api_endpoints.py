@@ -46,5 +46,30 @@ class TestAPIEndpoints(unittest.TestCase):
         data = res.get_json()
         self.assertIn("status", data)
 
+    def test_predict_endpoint_rejects_missing_features(self):
+        res = self.client.post("/api/predict", json={"Age": 34})
+        self.assertEqual(res.status_code, 400)
+        data = res.get_json()
+        self.assertEqual(data.get("status"), "error")
+        self.assertIn("Missing required features", data.get("message", ""))
+
+    def test_predict_endpoint_rejects_invalid_category(self):
+        sample = get_sample_employee("high")
+        sample["Gender"] = "Unknown"
+        res = self.client.post("/api/predict", json=sample)
+        self.assertEqual(res.status_code, 400)
+        data = res.get_json()
+        self.assertEqual(data.get("status"), "error")
+
+    def test_high_risk_profile_predicts_attrition(self):
+        res = self.client.post("/api/predict", json=get_sample_employee("high"))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_json().get("attrition"), "Yes")
+
+    def test_low_risk_profile_predicts_retention(self):
+        res = self.client.post("/api/predict", json=get_sample_employee("low"))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.get_json().get("attrition"), "No")
+
 if __name__ == "__main__":
     unittest.main()

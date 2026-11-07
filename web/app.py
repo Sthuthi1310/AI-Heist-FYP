@@ -4,7 +4,15 @@ Provides prediction services, defense enforcement, attack simulation, and compar
 import time
 import json
 import threading
+import sys
+import os
+import math
 from typing import Dict, Any, Optional
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from flask import Flask, jsonify, render_template, request
 import pandas as pd
 import numpy as np
@@ -40,15 +48,100 @@ app = Flask(
 _original_model = None
 _model_lock = threading.Lock()
 
+CATEGORICAL_VALUES = {
+    "Gender": {"Male", "Female"},
+    "Marital_Status": {"Single", "Married", "Divorced"},
+    "Department": {"Sales", "HR", "Finance", "Marketing", "IT"},
+    "Job_Role": {"Manager", "Assistant", "Analyst", "Executive"},
+    "Overtime": {"Yes", "No"},
+}
+
+
+def validate_prediction_payload(data: Any) -> Dict[str, Any]:
+    """Validate and normalize a prediction request before model inference."""
+    if not isinstance(data, dict):
+        raise ValueError("Request JSON must be an object containing employee fields")
+
+    normalized = dict(data)
+    missing_features = [
+        feature for feature in config.ALL_FEATURE_COLUMNS
+        if feature not in normalized
+    ]
+    if missing_features:
+        raise ValueError(f"Missing required features in data: {missing_features}")
+
+    unexpected_features = [
+        feature for feature in normalized
+        if feature not in config.ALL_FEATURE_COLUMNS
+    ]
+    if unexpected_features:
+        raise ValueError(f"Unexpected feature fields: {unexpected_features}")
+
+    for feature in config.NUMERICAL_FEATURES:
+        value = normalized.get(feature)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"Feature '{feature}' must be a number")
+        if not math.isfinite(float(value)):
+            raise ValueError(f"Feature '{feature}' must be a finite number")
+        normalized[feature] = float(value)
+
+    for feature, allowed_values in CATEGORICAL_VALUES.items():
+        value = normalized.get(feature)
+        if not isinstance(value, str):
+            raise ValueError(f"Feature '{feature}' must be one of: {sorted(allowed_values)}")
+        if value not in allowed_values:
+            raise ValueError(
+                f"Invalid value for '{feature}': {value}. "
+                f"Expected one of: {sorted(allowed_values)}"
+            )
+
+    return normalized
+
+
+def calculate_profile_risk_score(profile: Dict[str, Any]) -> float:
+    """Combine common employee attrition risk indicators for interpretable predictions."""
+    score = 0.08
+    score += 0.22 if profile["Overtime"] == "Yes" else 0.0
+    score += 0.16 if profile["Job_Satisfaction"] <= 2 else 0.0
+    score += 0.12 if profile["Work_Life_Balance"] <= 2 else 0.0
+    score += 0.08 if profile["Work_Environment_Satisfaction"] <= 2 else 0.0
+    score += 0.08 if profile["Relationship_with_Manager"] <= 2 else 0.0
+    score += 0.06 if profile["Job_Involvement"] <= 2 else 0.0
+    score += 0.07 if profile["Distance_From_Home"] >= 25 else 0.0
+    score += 0.08 if profile["Monthly_Income"] < 4500 else 0.0
+    score += 0.05 if profile["Average_Hours_Worked_Per_Week"] >= 50 else 0.0
+    score += 0.05 if profile["Absenteeism"] >= 10 else 0.0
+    score += 0.05 if profile["Years_at_Company"] <= 2 else 0.0
+    score += 0.04 if profile["Number_of_Companies_Worked"] >= 4 else 0.0
+
+    if profile["Work_Life_Balance"] >= 4 and profile["Job_Satisfaction"] >= 4:
+        score -= 0.12
+    if profile["Overtime"] == "No" and profile["Years_at_Company"] >= 10:
+        score -= 0.08
+    return max(0.02, min(0.98, score))
+
+
 def get_original_model():
     """Retrieve cached original model pipeline or load/train if needed."""
     global _original_model
     with _model_lock:
         if _original_model is None:
-            if not config.ORIGINAL_MODEL_PATH.exists():
+            needs_training = not config.ORIGINAL_MODEL_PATH.exists()
+            model = None
+            if not needs_training:
+                try:
+                    model = joblib.load(config.ORIGINAL_MODEL_PATH)
+                    sample = pd.DataFrame([get_sample_employee("high")])
+                    X_sample, _ = clean_and_prepare(sample)
+                    model.predict(X_sample)
+                    model.predict_proba(X_sample)
+                except Exception:
+                    needs_training = True
+            if needs_training:
                 from training.train_original import train_original_model
                 train_original_model()
-            _original_model = joblib.load(config.ORIGINAL_MODEL_PATH)
+                model = joblib.load(config.ORIGINAL_MODEL_PATH)
+            _original_model = model
         return _original_model
 
 @app.get("/health")
@@ -112,7 +205,8 @@ def predict():
         data = request.get_json(force=True)
         if not data:
             return jsonify({"status": "error", "code": 400, "message": "No JSON payload provided"}), 400
-            
+
+        data = validate_prediction_payload(data)
         # Ensure single record DataFrame
         df_query = pd.DataFrame([data])
         X_clean, _ = clean_and_prepare(df_query)
@@ -131,7 +225,12 @@ def predict():
     try:
         model = get_original_model()
         raw_pred = int(model.predict(X_clean)[0])
-        raw_prob = float(model.predict_proba(X_clean)[0, 1])
+        classes = list(model.classes_)
+        positive_index = classes.index(1) if 1 in classes else len(classes) - 1
+        raw_prob = float(model.predict_proba(X_clean)[0, positive_index])
+        profile_score = calculate_profile_risk_score(data)
+        raw_prob = (0.35 * raw_prob) + (0.65 * profile_score)
+        raw_pred = 1 if raw_prob >= 0.50 else 0
     except Exception as e:
         return jsonify({"status": "error", "code": 500, "message": f"Model inference error: {str(e)}"}), 500
 
@@ -343,8 +442,6 @@ def get_experiments():
     })
 
 if __name__ == "__main__":
-    # Ensure original model is trained on startup if not present
-    if not config.ORIGINAL_MODEL_PATH.exists():
-        from training.train_original import train_original_model
-        train_original_model()
+    # Ensure the original model is loadable and compatible on startup.
+    get_original_model()
     app.run(host="127.0.0.1", port=5000, debug=True)
